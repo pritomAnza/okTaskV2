@@ -1,110 +1,103 @@
-"use client"
-import React, { useState } from "react";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+"use client";
 
-function TodoApp() {
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState("");
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingText, setEditingText] = useState("");
+import { useState, useEffect } from "react";
 
-  const addTask = () => {
-    if (newTask.trim()) {
-      setTasks([...tasks, newTask]);
-      setNewTask("");
+export default function TodoPage() {
+  const [todos, setTodos] = useState([]);
+
+  const [newTodo, setNewTodo] = useState("");
+
+  const userId = 1; 
+
+  useEffect(() => {
+    fetch(`/api/todo?userId=${userId}`)
+      .then((res) => res.json())
+
+      .then((data) => setTodos(data));
+  }, []);
+
+  const addTodo = async () => {
+    if (newTodo.trim()) {
+      const res = await fetch("/api/todo", {
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify({ userId, content: newTodo }),
+      });
+
+      const data = await res.json();
+
+      setTodos([...todos, data]);
+
+      setNewTodo("");
     }
   };
 
+  const deleteTodo = async (id) => {
+    await fetch("/api/todo", {
+      method: "DELETE",
 
-  const deleteTask = (index) => {
-    setTasks(tasks.filter((_, i) => i !== index));
+      headers: { "Content-Type": "application/json" },
+
+      body: JSON.stringify({ id }),
+    });
+
+    setTodos(todos.filter((todo) => todo.id !== id));
   };
 
+  const updateTodo = async (id, content) => {
+    const res = await fetch("/api/todo", {
+      method: "PATCH",
 
-  const startEditing = (index) => {
-    setEditingIndex(index);
-    setEditingText(tasks[index]);
-  };
+      headers: { "Content-Type": "application/json" },
 
-  // Save Edited Task
-  const saveTask = () => {
-    if (editingText.trim()) {
-      const updatedTasks = tasks.map((task, index) =>
-        index === editingIndex ? editingText : task
-      );
-      setTasks(updatedTasks);
-      setEditingIndex(null);
-      setEditingText("");
-    }
+      body: JSON.stringify({ id, content }),
+    });
+
+    const updatedTodo = await res.json();
+
+    setTodos(todos.map((todo) => (todo.id === id ? updatedTodo : todo)));
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto bg-gray-100 rounded shadow">
-      <h1 className="text-2xl font-bold text-center mb-4">To-Do List</h1>
+    <div className="p-6 max-w-xl mx-auto bg-gray-100 rounded shadow">
+      <h1 className="text-3xl font-extrabold text-slate-600 text-center mb-4">
+        TODO LIST
+      </h1>
 
-      {/* Input and Add Button */}
       <div className="flex gap-2 mb-4">
         <input
           type="text"
           placeholder="Add a task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
           className="flex-1 px-4 py-2 border rounded"
         />
         <button
-          onClick={addTask}
+          onClick={addTodo}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          <FaPlus />
+          Add
         </button>
       </div>
 
-      {/* Task List */}
       <ul>
-        {tasks.map((task, index) => (
+        {todos.map((todo) => (
           <li
-            key={index}
+            key={todo.id}
             className="flex justify-between items-center bg-white p-3 mb-2 rounded shadow"
           >
-            {editingIndex === index ? (
-              <input
-                type="text"
-                value={editingText}
-                onChange={(e) => setEditingText(e.target.value)}
-                className="flex-1 px-2 py-1 border rounded mr-2"
-              />
-            ) : (
-              <span className="flex-1">{task}</span>
-            )}
-
-            <div className="flex items-center gap-2">
-              {editingIndex === index ? (
-                <button
-                  onClick={saveTask}
-                  className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Save
-                </button>
-              ) : (
-                <button
-                  onClick={() => startEditing(index)}
-                  className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                >
-                  <FaEdit />
-                </button>
-              )}
-              <button
-                onClick={() => deleteTask(index)}
-                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                <FaTrash />
-              </button>
-            </div>
+            <span>{todo.content}</span>
+            <button
+              onClick={() => deleteTodo(todo.id)}
+              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
     </div>
   );
 }
-
-export default TodoApp;
