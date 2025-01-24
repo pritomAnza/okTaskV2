@@ -20,7 +20,7 @@ export async function GET(req) {
 
     return NextResponse.json(todos);
   } catch (error) {
-    console.error("Error fetching todos:", error);
+    console.log("Error fetching todos:", error);
 
     return NextResponse.json(
       { error: "Failed to fetch todos" },
@@ -46,7 +46,7 @@ export async function POST(req) {
 
     return NextResponse.json(todo);
   } catch (error) {
-    console.error("Error creating todo:", error);
+    console.log("Error creating todo:", error);
 
     return NextResponse.json(
       { error: "Failed to create todo" },
@@ -72,7 +72,7 @@ export async function DELETE(req) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting todo:", error);
+    console.log("Error deleting todo:", error);
 
     return NextResponse.json(
       { error: "Failed to delete todo" },
@@ -100,7 +100,7 @@ export async function PATCH(req) {
 
     return NextResponse.json(todo);
   } catch (error) {
-    console.error("Error updating todo:", error);
+    console.log("Error updating todo:", error);
 
     return NextResponse.json(
       { error: "Failed to update todo" },
